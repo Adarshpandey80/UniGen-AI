@@ -2,6 +2,6 @@ const express = require("express");
 const router = express.Router();
 const ChatController = require("../controllers/chatController");
 
-router.get("/request" , ChatController.getChatResult);
+router.post("/request" , ChatController.getChatResult);
 
 module.exports = router;
