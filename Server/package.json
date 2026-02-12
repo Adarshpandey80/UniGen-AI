@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.28.2",
   "dependencies": {
     "@google/genai": "^1.40.0",
+    "@langchain/google-genai": "^2.1.17",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
