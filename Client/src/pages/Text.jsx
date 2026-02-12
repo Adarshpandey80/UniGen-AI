@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 
-function ChatPage() {
+function Text() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
 
   const api = `${import.meta.env.VITE_API_URL}/user/request`;
@@ -24,6 +25,7 @@ function ChatPage() {
     const currentMessage = input;
     setInput("");
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch(api, {
@@ -33,6 +35,16 @@ function ChatPage() {
         },
         body: JSON.stringify({ message: currentMessage }),
       });
+
+      // Check if response is OK
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Check if response body exists
+      if (!response.body) {
+        throw new Error("Response body is null");
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -63,6 +75,9 @@ function ChatPage() {
       }
     } catch (error) {
       console.error(error);
+      setError(error.message);
+      // Remove the empty AI message on error
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);
     }
@@ -73,9 +88,15 @@ function ChatPage() {
       
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 && (
+        {messages.length === 0 && !error && (
           <div className="text-center text-slate-500 mt-32">
             Ask anything to UniGen AI
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-xl text-sm">
+            Error: {error}
           </div>
         )}
 
@@ -107,11 +128,7 @@ function ChatPage() {
           onSubmit={handleSend}
           className="flex items-center gap-3 bg-slate-800 rounded-2xl px-4 py-2"
         >
-          <select name="" id="">
-            <option value="">Text</option>
-            <option value="">Image</option>
-            <option value="">Vide</option>
-          </select>
+        
           <input
             type="text"
             placeholder="Message UniGen AI..."
@@ -122,7 +139,8 @@ function ChatPage() {
 
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-500 transition p-2 rounded-xl"
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-500 transition p-2 rounded-xl disabled:opacity-50"
           >
             <Send size={18} />
           </button>
@@ -132,4 +150,5 @@ function ChatPage() {
   );
 }
 
-export default ChatPage;
+export default Text;
+

@@ -1,20 +1,26 @@
 import React from 'react'
 import Layout from './Layout'
-import ChatPage from './pages/ChatPage'
+import Text from './pages/Text'
+import Image from './pages/Image'
+import Video from './pages/Video'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Layout />}>
-          <Route index element={<ChatPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<Layout />}>
+            <Route index element={<Text />} />
+            <Route path='/image' element={<Image />} />
+            <Route path='/video' element={<Video />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 
 export default App
-
 
