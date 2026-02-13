@@ -36,71 +36,30 @@ function Image() {
                 body: JSON.stringify({ message: currentMessage }),
             });
 
-            // Check if response is OK
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(data.error || "Failed to generate image");
             }
 
-            // Check if response body exists
-            if (!response.body) {
-                throw new Error("Response body is null");
-            }
+            // Add AI message with image
+            setMessages((prev) => [
+                ...prev,
+                {
+                    role: "ai",
+                    text: "",
+                    image: data.image,
+                },
+            ]);
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder("utf-8");
-
-            let aiText = "";
-
-            // Add empty AI message
-            setMessages((prev) => [...prev, { role: "ai", text: "", image: null }]);
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value);
-                const cleaned = chunk
-                    .replace(/data: /g, "")
-                    .replace(/\n\n/g, "");
-
-                if (cleaned === "[DONE]") break;
-
-                // Try to parse as JSON for image response
-                try {
-                    const data = JSON.parse(cleaned);
-                    if (data.image) {
-                        setMessages((prev) => {
-                            const updated = [...prev];
-                            updated[updated.length - 1].image = data.image;
-                            return updated;
-                        });
-                    } else if (data.text) {
-                        aiText += data.text;
-                        setMessages((prev) => {
-                            const updated = [...prev];
-                            updated[updated.length - 1].text = aiText;
-                            return updated;
-                        });
-                    }
-                } catch {
-                    // If not JSON, treat as text
-                    aiText += cleaned;
-                    setMessages((prev) => {
-                        const updated = [...prev];
-                        updated[updated.length - 1].text = aiText;
-                        return updated;
-                    });
-                }
-            }
         } catch (error) {
             console.error(error);
             setError(error.message);
-            // Remove the empty AI message on error
-            setMessages((prev) => prev.slice(0, -1));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="flex flex-col h-full bg-slate-900 text-white">
@@ -121,11 +80,10 @@ function Image() {
                 {messages.map((msg, index) => (
                     <div
                         key={index}
-                        className={`max-w-2xl px-5 py-3 rounded-2xl text-sm shadow ${
-                            msg.role === "user"
+                        className={`max-w-2xl px-5 py-3 rounded-2xl text-sm shadow ${msg.role === "user"
                                 ? "bg-blue-600 ml-auto"
                                 : "bg-slate-800"
-                        }`}
+                            }`}
                     >
                         {msg.text && <p>{msg.text}</p>}
 
