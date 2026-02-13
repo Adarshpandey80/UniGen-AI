@@ -10,7 +10,7 @@ function Image() {
 
     const api = `${import.meta.env.VITE_API_URL}/user/request/image`;
 
-    // Auto scroll to bottom
+   
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
@@ -42,7 +42,7 @@ function Image() {
                 throw new Error(data.error || "Failed to generate image");
             }
 
-            // Add AI message with image
+     
             setMessages((prev) => [
                 ...prev,
                 {

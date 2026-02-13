@@ -10,7 +10,7 @@ function Text() {
 
   const api = `${import.meta.env.VITE_API_URL}/user/request/text`;
 
-  // Auto Scroll
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -47,7 +47,7 @@ function Text() {
 
       let aiText = "";
 
-      // Add AI empty message first
+
       setMessages((prev) => [...prev, { role: "ai", text: "" }]);
 
       while (true) {
@@ -56,7 +56,7 @@ function Text() {
 
         const chunk = decoder.decode(value, { stream: true });
 
-        // Split by new line
+   
         const lines = chunk.split("\n");
 
         for (let line of lines) {
@@ -83,7 +83,7 @@ function Text() {
       console.error("UI Error:", err);
       setError(err.message);
 
-      // Remove incomplete AI message
+    
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);

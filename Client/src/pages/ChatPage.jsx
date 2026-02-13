@@ -10,19 +10,19 @@ function ChatPage() {
 
   const api = `${import.meta.env.VITE_API_URL}/user/chatUpdate`;
 
-  // Load selected chat
+
   useEffect(() => {
     if (selectedChat) {
       setChatData(selectedChat);
     }
   }, [selectedChat]);
 
-  // Auto scroll
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatData]);
 
-  // ✅ SEND MESSAGE
+
   const handleSend = async (e) => {
   e.preventDefault();
   if (!input.trim()) return;
@@ -30,11 +30,11 @@ function ChatPage() {
   const userMessage = input;
   setInput("");
 
-  // 🔥 Show user message instantly
+
   setChatData(prev => ({
     ...prev,
     request: [...prev.request, userMessage],
-    response: [...prev.response, ""], // empty AI response for streaming
+    response: [...prev.response, ""], 
   }));
 
   const response = await fetch(

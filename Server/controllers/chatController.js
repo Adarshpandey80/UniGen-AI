@@ -95,7 +95,7 @@ const getImageResult = async (req, res) => {
     const base64 = Buffer.from(imageBuffer).toString("base64");
     const imageUrl = `data:image/png;base64,${base64}`;
 
-    // ✅ Normal JSON response
+  
     res.json({ image: imageUrl });
 
   } catch (error) {
@@ -119,7 +119,7 @@ const createOrUpdateChat = async (req, res) => {
       streaming: true,
     });
 
-    // ✅ SSE HEADERS
+    
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -139,11 +139,11 @@ const createOrUpdateChat = async (req, res) => {
 
       fullResponse += text;
 
-      // 🔥 Send chunk to frontend
+      
       res.write(`data: ${JSON.stringify({ text })}\n\n`);
     }
 
-    // ✅ Save to DB AFTER stream complete
+    
     await History.findByIdAndUpdate(
       chatId,
       {
