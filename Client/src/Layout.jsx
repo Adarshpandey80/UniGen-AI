@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 import SideBar from "./pages/SideBar";
+import { useNavigate } from "react-router-dom";
+
 
 function Layout() {
+  const navigate = useNavigate();
+  const [selectedChat, setSelectedChat] = useState(null);
+
+  const handleSelectChat = (chat) => {
+    setSelectedChat(chat);
+    console.log("Selected chat:", chat);
+      navigate("/chatpage");
+  };
+
   return (
     <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
       
       {/* Sidebar */}
-      <SideBar />
+      <SideBar onSelectChat={handleSelectChat} />
 
       {/* Main Section */}
       <div className="flex-1 flex flex-col">
@@ -16,7 +27,7 @@ function Layout() {
         {/* Top Navbar */}
         <header className="flex items-center justify-between px-8 py-4 border-b border-slate-800 bg-slate-900/60 backdrop-blur-xl">
           
-          {/* Logo / Title */}
+          {/* Logo */}
           <div className="flex items-center gap-3">
             <Sparkles className="text-blue-500" />
             <h1 className="text-xl font-semibold tracking-wide">
@@ -24,7 +35,7 @@ function Layout() {
             </h1>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation */}
           <nav className="flex items-center gap-6 text-sm font-medium">
             <NavLink
               to="/"
@@ -60,18 +71,18 @@ function Layout() {
             </NavLink>
           </nav>
 
-          {/* Profile Section */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center font-semibold text-sm">
-              AP
-            </div>
+          {/* Profile Badge */}
+          <div className="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold">
+            AP
           </div>
+
         </header>
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-8 bg-slate-950">
-          <Outlet />
+          <Outlet context={{ selectedChat }} />
         </main>
+
       </div>
     </div>
   );

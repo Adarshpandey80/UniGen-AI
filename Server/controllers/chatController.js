@@ -1,7 +1,6 @@
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const History = require("../model/ChatHistoryModel")
 
-
 const getChatResult = async (req, res) => {
   try {
     const { message } = req.body;
@@ -17,13 +16,27 @@ const getChatResult = async (req, res) => {
     res.setHeader("Connection", "keep-alive");
 
     const stream = await model.stream(message);
-        let fullResponse = ""; 
+    console.log(stream)
+    console.log(stream.content)
+
+    let fullResponse = "";
+
     for await (const chunk of stream) {
-      const text = chunk.content;
-        fullResponse += text;
+      let text = "";
+
+      if (typeof chunk.content === "string") {
+        text = chunk.content;
+      } else if (Array.isArray(chunk.content)) {
+        text = chunk.content.map(c => c.text || "").join("");
+      }
+
+      fullResponse += text;
+
+      // res.write(`data: ${JSON.stringify(text)}\n\n`);
       res.write(`data: ${text}\n\n`);
+
     }
-    
+
     await History.create({
       request: message,
       response: fullResponse,
@@ -32,14 +45,21 @@ const getChatResult = async (req, res) => {
 
     res.write("data: [DONE]\n\n");
     res.end();
+
   } catch (error) {
-    console.error("Chat error:", error);
-    
-    // Send error in SSE format so client can handle it properly
-    res.write(`data: {"error": "${error.message}"}\n\n`);
+    console.error("STREAM ERROR:", error);
+
+    if (!res.headersSent) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.write(`data: ERROR: ${error.message}\n\n`);
+    res.write("data: [DONE]\n\n");
     res.end();
   }
 };
+
+
 
 const getImageResult = async (req, res) => {
   try {
@@ -89,7 +109,15 @@ const getImageResult = async (req, res) => {
   }
 };
 
+const getHistory = async (req,res)=>{
+  try {
+    const history = await History.find().sort({ createdAt: -1 });
+    res.json(history);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
 
 
-module.exports = { getChatResult, getImageResult };
+module.exports = { getChatResult, getImageResult ,getHistory};
 

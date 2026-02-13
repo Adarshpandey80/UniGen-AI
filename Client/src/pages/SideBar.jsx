@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Plus,
   PanelLeftClose,
@@ -6,15 +7,26 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-function SideBar() {
+function SideBar({ onSelectChat }) {
   const [isOpen, setIsOpen] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
+  const [history, setHistory] = useState([]);
 
-  const history = [
-    "What is MERN stack?",
-    "Generate AI image",
-    "Create marketing video",
-  ];
+
+    const api = `${import.meta.env.VITE_API_URL}/user/history`;
+  useEffect(() => {
+    const fetchHistory = async () => {
+    
+      try {
+        const res = await axios.get(api);
+        setHistory(res.data);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+      }
+    };
+
+    fetchHistory();
+  }, []);
 
   return (
     <div
@@ -38,20 +50,15 @@ function SideBar() {
         </button>
       </div>
 
-      {/* New Chat Button */}
-      <div className="p-4">
-        <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 transition p-2 rounded-xl text-sm">
-          <Plus size={16} />
-          {isOpen && "New Chat"}
-        </button>
-      </div>
-
       {/* Chat History */}
       <div className="flex-1 overflow-y-auto px-3 space-y-2">
         {history.map((item, index) => (
           <div
-            key={index}
-            onClick={() => setActiveChat(index)}
+            key={item._id}
+            onClick={() => {
+              setActiveChat(index);
+              onSelectChat(item); 
+            }}
             className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer text-sm transition ${
               activeChat === index
                 ? "bg-slate-800 text-white"
@@ -61,7 +68,9 @@ function SideBar() {
             <MessageSquare size={16} />
 
             {isOpen && (
-              <span className="truncate">{item}</span>
+              <span className="truncate">
+                {item.request}
+              </span>
             )}
           </div>
         ))}

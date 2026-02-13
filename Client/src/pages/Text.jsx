@@ -8,16 +8,16 @@ function Text() {
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
 
-  const api = `${import.meta.env.VITE_API_URL}/user/request`;
+  const api = `${import.meta.env.VITE_API_URL}/user/request/text`;
 
-  // Auto scroll to bottom
+  // Auto Scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
     const userMessage = { role: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -30,20 +30,16 @@ function Text() {
     try {
       const response = await fetch(api, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: currentMessage }),
       });
 
-      // Check if response is OK
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Server Error: ${response.status}`);
       }
 
-      // Check if response body exists
       if (!response.body) {
-        throw new Error("Response body is null");
+        throw new Error("Streaming not supported");
       }
 
       const reader = response.body.getReader();
@@ -51,32 +47,43 @@ function Text() {
 
       let aiText = "";
 
-      // Add empty AI message
+      // Add AI empty message first
       setMessages((prev) => [...prev, { role: "ai", text: "" }]);
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const cleaned = chunk
-          .replace(/data: /g, "")
-          .replace(/\n\n/g, "");
+        const chunk = decoder.decode(value, { stream: true });
 
-        if (cleaned === "[DONE]") break;
+        // Split by new line
+        const lines = chunk.split("\n");
 
-        aiText += cleaned;
+        for (let line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.replace("data: ", "").trim();
 
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1].text = aiText;
-          return updated;
-        });
+            if (data === "[DONE]") {
+              setLoading(false);
+              return;
+            }
+
+            aiText += data;
+
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[updated.length - 1].text = aiText;
+              return updated;
+            });
+          }
+        }
       }
-    } catch (error) {
-      console.error(error);
-      setError(error.message);
-      // Remove the empty AI message on error
+
+    } catch (err) {
+      console.error("UI Error:", err);
+      setError(err.message);
+
+      // Remove incomplete AI message
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);
@@ -84,30 +91,29 @@ function Text() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 text-white">
-      
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 to-black text-white">
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 && !error && (
-          <div className="text-center text-slate-500 mt-32">
-            Ask anything to UniGen AI
+          <div className="text-center text-slate-500 mt-40 text-lg">
+            Ask anything to <span className="text-blue-500 font-semibold">UniGen AI</span>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-xl text-sm">
-            Error: {error}
+          <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-xl text-sm">
+            ⚠ {error}
           </div>
         )}
 
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`max-w-2xl px-5 py-3 rounded-2xl text-sm shadow ${
-              msg.role === "user"
+            className={`max-w-2xl px-5 py-3 rounded-2xl text-sm shadow-lg transition-all ${msg.role === "user"
                 ? "bg-blue-600 ml-auto"
                 : "bg-slate-800"
-            }`}
+              }`}
           >
             {msg.text}
           </div>
@@ -126,15 +132,14 @@ function Text() {
       <div className="p-4 border-t border-slate-800 bg-slate-950">
         <form
           onSubmit={handleSend}
-          className="flex items-center gap-3 bg-slate-800 rounded-2xl px-4 py-2"
+          className="flex items-center gap-3 bg-slate-800 rounded-2xl px-4 py-2 shadow-lg"
         >
-        
           <input
             type="text"
             placeholder="Message UniGen AI..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-sm"
+            className="flex-1 bg-transparent outline-none text-sm placeholder-slate-500"
           />
 
           <button
@@ -151,4 +156,3 @@ function Text() {
 }
 
 export default Text;
-
