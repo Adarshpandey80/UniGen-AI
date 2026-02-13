@@ -93,65 +93,72 @@ function Text() {
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 to-black text-white">
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 && !error && (
-          <div className="text-center text-slate-500 mt-40 text-lg">
-            Ask anything to <span className="text-blue-500 font-semibold">UniGen AI</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-xl text-sm">
-            ⚠ {error}
-          </div>
-        )}
-
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`max-w-2xl px-5 py-3 rounded-2xl text-sm shadow-lg transition-all ${msg.role === "user"
-                ? "bg-blue-600 ml-auto"
-                : "bg-slate-800"
-              }`}
-          >
-            {msg.text}
-          </div>
-        ))}
-
-        {loading && (
-          <div className="bg-slate-800 px-4 py-3 rounded-2xl w-fit text-sm animate-pulse">
-            AI is typing...
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
+  {/* Messages */}
+  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    {messages.length === 0 && !error && (
+      <div className="text-center text-slate-500 mt-40 text-lg">
+        Ask anything to <span className="text-blue-500 font-semibold">UniGen AI</span>
       </div>
+    )}
 
-      {/* Input */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950">
-        <form
-          onSubmit={handleSend}
-          className="flex items-center gap-3 bg-slate-800 rounded-2xl px-4 py-2 shadow-lg"
+    {error && (
+      <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-xl text-sm">
+        ⚠ {error}
+      </div>
+    )}
+
+    {messages.map((msg, index) => (
+      <div
+        key={index}
+        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+      >
+        <div
+          className={`inline-block px-4 py-2 rounded-2xl shadow-md
+            ${msg.role === "user" ? "bg-blue-600 text-white rounded-br-md" : "bg-slate-800 text-slate-200 rounded-bl-md"}
+          `}
+          style={{ maxWidth: "60%", width: "fit-content" }}
         >
-          <input
-            type="text"
-            placeholder="Message UniGen AI..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-sm placeholder-slate-500"
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-500 transition p-2 rounded-xl disabled:opacity-50"
-          >
-            <Send size={18} />
-          </button>
-        </form>
+          <p className="text-sm whitespace-pre-wrap break-words">
+            {msg.text}
+          </p>
+        </div>
       </div>
-    </div>
+    ))}
+
+    {loading && (
+      <div className="bg-slate-800 px-4 py-3 rounded-2xl w-fit text-sm animate-pulse">
+        AI is typing...
+      </div>
+    )}
+
+    <div ref={messagesEndRef} />
+  </div>
+
+  {/* Input */}
+  <div className="p-4 border-t border-slate-800 bg-slate-950">
+    <form
+      onSubmit={handleSend}
+      className="flex items-center gap-3 bg-slate-800 rounded-2xl px-4 py-2 shadow-lg"
+    >
+      <input
+        type="text"
+        placeholder="Message UniGen AI..."
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        className="flex-1 bg-transparent outline-none text-sm placeholder-slate-500"
+      />
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-blue-600 hover:bg-blue-500 transition p-2 rounded-xl disabled:opacity-50"
+      >
+        <Send size={18} />
+      </button>
+    </form>
+  </div>
+</div>
+
   );
 }
 

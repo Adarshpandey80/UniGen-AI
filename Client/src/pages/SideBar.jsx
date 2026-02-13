@@ -5,7 +5,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   MessageSquare,
+  Trash 
 } from "lucide-react";
+
 
 function SideBar({ onSelectChat }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -27,6 +29,11 @@ function SideBar({ onSelectChat }) {
 
     fetchHistory();
   }, []);
+    
+  const deleteHistory = async(id)=>{
+     const api = `${import.meta.env.VITE_API_URL}/user/deletehistory/${id}`;
+     console.log("button clicked")
+  }
 
   return (
     <div
@@ -66,10 +73,12 @@ function SideBar({ onSelectChat }) {
             }`}
           >
             <MessageSquare size={16} />
+            <button> <Trash size={18} onClick={()=>{deleteHistory(item._id)}}/></button>
+           
 
             {isOpen && (
               <span className="truncate">
-                {item.request}
+                {item.request[0]}
               </span>
             )}
           </div>

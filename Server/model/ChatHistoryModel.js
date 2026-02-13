@@ -8,14 +8,14 @@ const historySchema = new mongoose.Schema(
       
     },
 
-    request: {
+    request: [{
       type: String,
       required: true,
-    },
+    }],
 
-    response: {
+    response: [{
       type: String,
-    },
+    }],
 
     type: {
       type: String,
